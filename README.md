@@ -1,175 +1,232 @@
-# sendgrid-php #
-This library allows you to quickly and easily send emails through SendGrid using PHP.
- 
-## License ##
-Licensed under the MIT License.
+![SendGrid Logo](https://github.com/sendgrid/sendgrid-python/raw/master/twilio_sendgrid_logo.png)
 
-## Downloading ##
+[![BuildStatus](https://travis-ci.org/sendgrid/sendgrid-php.svg?branch=master)](https://travis-ci.org/sendgrid/sendgrid-php)
+[![Packagist](https://img.shields.io/packagist/v/sendgrid/sendgrid.svg)](https://packagist.org/packages/sendgrid/sendgrid)
+[![Downloads](https://img.shields.io/packagist/dt/sendgrid/sendgrid.svg?maxAge=3600)](https://packagist.org/packages/sendgrid/sendgrid)
+[![Email Notifications Badge](https://dx.sendgrid.com/badge/php)](https://dx.sendgrid.com/newsletter/php)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
+[![Twitter Follow](https://img.shields.io/twitter/follow/sendgrid.svg?style=social&label=Follow)](https://twitter.com/sendgrid)
+[![GitHub contributors](https://img.shields.io/github/contributors/sendgrid/sendgrid-php.svg)](https://github.com/sendgrid/sendgrid-php/graphs/contributors)
+[![Open Source Helpers](https://www.codetriage.com/sendgrid/sendgrid-php/badges/users.svg)](https://www.codetriage.com/sendgrid/sendgrid-php)
 
-Installing the SendGrid package is as simple as adding it to your project's include path and requiring it.  If you're using git, you can just clone down the repo like this:
+**NEW:**
+- Subscribe to email [notifications](https://dx.sendgrid.com/newsletter/php) for releases and breaking changes.
+- Send SMS messages with [Twilio](https://github.com/sendgrid/sendgrid-php/blob/master/USE_CASES.md#sms).
 
+**This library allows you to quickly and easily use the Twilio SendGrid Web API v3 via PHP.**
+
+Version 7.X.X of this library provides full support for all Twilio SendGrid [Web API v3](https://sendgrid.com/docs/API_Reference/Web_API_v3/index.html) endpoints, including the new [v3 /mail/send](https://sendgrid.com/blog/introducing-v3mailsend-sendgrids-new-mail-endpoint).
+
+We want this library to be community driven and Twilio SendGrid led. Your help is needed to realize this goal. To help make sure we are building the right things in the right order, we ask that you create [issues](https://github.com/sendgrid/sendgrid-php/issues) and [pull requests](https://github.com/sendgrid/sendgrid-php/blob/master/CONTRIBUTING.md) or simply upvote or comment on existing issues or pull requests.
+
+Please browse the rest of this README for further details.
+
+We appreciate your continued support, thank you!
+
+# Table of Contents
+
+* [Installation](#installation)
+* [Quick Start](#quick-start)
+* [Use Cases](#use-cases)
+* [Usage](#usage)
+* [Announcements](#announcements)
+* [Roadmap](#roadmap)
+* [How to Contribute](#contribute)
+* [Troubleshooting](#troubleshooting)
+* [About](#about)
+* [License](#license)
+
+<a name="installation"></a>
+# Installation
+
+## Prerequisites
+
+- PHP version 5.6, 7.0, 7.1, 7.2, 7.3, or 7.4
+- The Twilio SendGrid service, starting at the [free level](https://sendgrid.com/free?source=sendgrid-php) to send up to 40,000 emails for the first 30 days, then send 100 emails/day free forever or check out [our pricing](https://sendgrid.com/pricing?source=sendgrid-php).
+- For SMS messages, you will need a free [Twilio account](https://www.twilio.com/try-twilio?source=sendgrid-php).
+
+## Setup Environment Variables
+
+Update the development environment with your [SENDGRID_API_KEY](https://app.sendgrid.com/settings/api_keys), for example:
+
+1. Copy the sample env file to a new file named `.env`
+```bash
+cp .env.sample .env
 ```
-git clone git@github.com:sendgrid/sendgrid-php.git
+2. Edit the `.env` file to include your `SENDGRID_API_KEY`
+3. Source the `.env` file
+```bash
+source ./.env
 ```
 
-__Note__: If you don't have git or would rather install by unpacking a Zip or Tarball, you can always grab the latest version of the package from [the downloads page](https://github.com/sendgrid/sendgrid-php/downloads). 
+## Install Package
 
-## Testing ##
+Add Twilio SendGrid to your `composer.json` file. If you are not using [Composer](http://getcomposer.org), we highly recommend it. It's an excellent way to manage dependencies in your PHP application.
 
-The existing tests in the `Test` directory can be run using [PHPUnit](https://github.com/sebastianbergmann/phpunit/) with the following command:
-
-````
-phpunit Test/
+```json
+{
+  "require": {
+    "sendgrid/sendgrid": "~7"
+  }
+}
 ```
 
-## SendGrid APIs ##
-SendGrid provides two methods of sending email: the Web API, and SMTP API.  SendGrid recommends using the SMTP API for sending emails.
-For an explanation of the benefits of each, refer to http://docs.sendgrid.com/documentation/get-started/integrate/examples/smtp-vs-rest/.
+#### Alternative: Install package from zip
 
-This library implements a common interface to make it very easy to use either API.
+If you are not using Composer, simply download and install the **[latest packaged release of the library as a zip](https://github.com/sendgrid/sendgrid-php/releases/download/7.8.0/sendgrid-php.zip)**.
 
-## Mail Pre-Usage ##
+[**⬇︎ Download Packaged Library ⬇︎**](https://github.com/sendgrid/sendgrid-php/releases/download/7.8.0/sendgrid-php.zip)
 
-Before we begin using the library, its important to understand a few things about the library architecture...
+Previous versions of the library can be found in the [version index](https://sendgrid-open-source.s3.amazonaws.com/index.html) or downloaded directly from [GitHub](https://github.com/sendgrid/sendgrid-php/releases).
 
-* The SendGrid Mail object is the means of setting mail data. In general, data can be set in three ways for most elements:
-  1. set - reset the data, and initialize it to the given element. This will destroy previous data
-  2. set (List) - for array based elements, we provide a way of passing the entire array in at once. This will also destroy previous data.
-  3. add - append data to the list of elements.
+## Dependencies
 
-* Sending an email is as simple as :
-  1. Creating a SendGrid Instance
-  1. Creating a SendGrid Mail object, and setting its data
-  1. Sending the mail using either SMTP API or Web API.
+- The Twilio SendGrid Service, starting at the [free level](https://sendgrid.com/free?source=sendgrid-php)
+- The dependency free [php-http-client](https://github.com/sendgrid/php-http-client)
 
-## Mail Usage ##
+<a name="quick-start"></a>
+# Quick Start
 
-To begin using this library, you must first include it
+## Hello Email
+
+The following is the minimum needed code to send an email. You may find more examples in our USE_CASES file:
 
 ```php
-include 'path/to/sendgrid-php/SendGrid_loader.php';
+<?php
+require 'vendor/autoload.php'; // If you're using Composer (recommended)
+// Comment out the above line if not using Composer
+// require("<PATH TO>/sendgrid-php.php");
+// If not using Composer, uncomment the above line and
+// download sendgrid-php.zip from the latest release here,
+// replacing <PATH TO> with the path to the sendgrid-php.php file,
+// which is included in the download:
+// https://github.com/sendgrid/sendgrid-php/releases
+
+$email = new \SendGrid\Mail\Mail();
+$email->setFrom("test@example.com", "Example User");
+$email->setSubject("Sending with Twilio SendGrid is Fun");
+$email->addTo("test@example.com", "Example User");
+$email->addContent("text/plain", "and easy to do anywhere, even with PHP");
+$email->addContent(
+    "text/html", "<strong>and easy to do anywhere, even with PHP</strong>"
+);
+$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+try {
+    $response = $sendgrid->send($email);
+    print $response->statusCode() . "\n";
+    print_r($response->headers());
+    print $response->body() . "\n";
+} catch (Exception $e) {
+    echo 'Caught exception: '. $e->getMessage() ."\n";
+}
 ```
 
-Then, initialize the SendGrid object with your SendGrid credentials
+The `SendGrid\Mail` constructor creates a [personalization object](https://sendgrid.com/docs/Classroom/Send/v3_Mail_Send/personalizations.html) for you. [Here](https://github.com/sendgrid/sendgrid-php/blob/master/USE_CASES.md#kitchen-sink) is an example of how to add to it.
+
+## General v3 Web API Usage (With Fluent Interface)
 
 ```php
-$sendgrid = new SendGrid('username', 'password');
+<?php
+require 'vendor/autoload.php'; // If you're using Composer (recommended)
+// Comment out the above line if not using Composer
+// Comment out the above line if not using Composer
+// require("<PATH TO>/sendgrid-php.php");
+// If not using Composer, uncomment the above line and
+// download sendgrid-php.zip from the latest release here,
+// replacing <PATH TO> with the path to the sendgrid-php.php file,
+// which is included in the download:
+// https://github.com/sendgrid/sendgrid-php/releases
+
+$apiKey = getenv('SENDGRID_API_KEY');
+$sg = new \SendGrid($apiKey);
+
+try {
+    $response = $sg->client->suppression()->bounces()->get();
+    print $response->statusCode() . "\n";
+    print_r($response->headers());
+    print $response->body() . "\n";
+} catch (Exception $e) {
+    echo 'Caught exception: '.  $e->getMessage(). "\n";
+}
 ```
 
-Create a new SendGrid Mail object and add your message details
+## General v3 Web API Usage (Without Fluent Interface)
 
 ```php
-$mail = new SendGrid\Mail();
-$mail->addTo('foo@bar.com')->
-       setFrom('me@bar.com')->
-       setSubject('Subject goes here')->
-       setText('Hello World!')->
-       setHtml('<strong>Hello World!</strong>');
+<?php
+require 'vendor/autoload.php'; // If you're using Composer (recommended)
+// Comment out the above line if not using Composer
+// Comment out the above line if not using Composer
+// require("<PATH TO>/sendgrid-php.php");
+// If not using Composer, uncomment the above line and
+// download sendgrid-php.zip from the latest release here,
+// replacing <PATH TO> with the path to the sendgrid-php.php file,
+// which is included in the download:
+// https://github.com/sendgrid/sendgrid-php/releases
+
+$apiKey = getenv('SENDGRID_API_KEY');
+$sg = new \SendGrid($apiKey);
+
+try {
+    $response = $sg->client->_("suppression/bounces")->get();
+    print $response->statusCode() . "\n";
+    print_r($response->headers());
+    print $response->body() . "\n";
+} catch (Exception $e) {
+    echo 'Caught exception: '.  $e->getMessage(). "\n";
+}
 ```
 
-Send it using the API of your choice (SMTP or Web)
+<a name="use-cases"></a>
+# Use Cases
 
-```php
-$sendgrid->smtp->send($mail);
-```
-Or 
+[Examples of common API use cases](https://github.com/sendgrid/sendgrid-php/blob/master/USE_CASES.md), such as how to send an email with a transactional template.
 
-```php
-$sendgrid->web->send($mail);
-```
+<a name="usage"></a>
+# Usage
 
-### Using Categories ###
+- [Twilio SendGrid Docs](https://sendgrid.com/docs/API_Reference/index.html)
+- [Generic Library Usage
+    Documentation](https://github.com/sendgrid/sendgrid-php/tree/master/USAGE.md)
+- [Example Code](https://github.com/sendgrid/sendgrid-php/blob/master/USE_CASES.md)
 
-Categories are used to group email statistics provided by SendGrid.
+<a name="announcements"></a>
+# Announcements
 
-To use a category, simply set the category name.  Note: there is a maximum of 10 categories per email.
+v7 has been released! Please see the [release notes](https://github.com/sendgrid/sendgrid-php/releases/tag/v7.0.0) for details.
 
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('foo@bar.com')->
-       ...
-       addCategory("Category 1")->
-       addCategory("Category 2");
-```
+All updates to this library are documented in our [CHANGELOG](https://github.com/sendgrid/sendgrid-php/blob/master/CHANGELOG.md) and [releases](https://github.com/sendgrid/sendgrid-php/releases). You may also subscribe to email [release notifications](https://dx.sendgrid.com/newsletter/php) for releases and breaking changes.
 
+<a name="roadmap"></a>
+# Roadmap
 
-### Using Attachments ###
+If you are interested in the future direction of this project, please take a look at our open [issues](https://github.com/sendgrid/sendgrid-php/issues) and [pull requests](https://github.com/sendgrid/sendgrid-php/pulls). We would love to hear your feedback.
 
-Attachments are currently file based only, with future plans for an in memory implementation as well.
+<a name="contribute"></a>
+# How to Contribute
 
-File attachments are limited to 7 MB per file.
+We encourage contribution to our libraries (you might even score some nifty swag), please see our [CONTRIBUTING](https://github.com/sendgrid/sendgrid-php/blob/master/CONTRIBUTING.md) guide for details.
 
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('foo@bar.com')->
-       ...
-       addAttachment("../path/to/file.txt");    
-```
+Quick links:
 
-### Using Substitutions ###
+- [Feature Request](https://github.com/sendgrid/sendgrid-php/blob/master/CONTRIBUTING.md#feature_request)
+- [Bug Reports](https://github.com/sendgrid/sendgrid-php/blob/master/CONTRIBUTING.md#submit_a_bug_report)
+- [Improvements to the Codebase](https://github.com/sendgrid/sendgrid-php/blob/master/CONTRIBUTING.md#improvements_to_the_codebase)
+- [Review Pull Requests](https://github.com/sendgrid/sendgrid-php/blob/master/CONTRIBUTING.md#code-reviews)
 
-Substitutions can be used to customize multi-recipient emails, and tailor them for the user
+<a name="troubleshooting"></a>
+# Troubleshooting
 
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('john@somewhere.com')->
-       addTo("harry@somewhere.com")->
-       addTo("Bob@somewhere.com")->
-       ...
-       setHtml("Hey %name%, we've seen that you've been gone for a while")->
-       addSubstitution("%name%", array("John", "Harry", "Bob"));
-```
+Please see our [troubleshooting guide](https://github.com/sendgrid/sendgrid-php/blob/master/TROUBLESHOOTING.md) for common library issues.
 
-### Using Sections ###
+<a name="about"></a>
+# About
 
-Sections can be used to further customize messages for the end users. A section is only useful in conjunction with a substition value.
+sendgrid-php is maintained and funded by Twilio SendGrid, Inc. The names and logos for sendgrid-php are trademarks of Twilio SendGrid, Inc.
 
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('john@somewhere.com')->
-       addTo("harry@somewhere.com")->
-       addTo("Bob@somewhere.com")->
-       ...
-       setHtml("Hey %name%, you work at %place%")->
-       addSubstitution("%name%", array("John", "Harry", "Bob"))->
-       addSubstitution("%place%", array("%office%", "%office%", "%home%"))->
-       addSection("%office%", "an office")->
-       addSection("%home%", "your house");
-```
+If you need help installing or using the library, please check the [Twilio SendGrid Support Help Center](https://support.sendgrid.com).
 
-### Using Unique Arguments ###
+If you've instead found a bug in the library or would like new features added, go ahead and open issues or pull requests against this repo!
 
-Unique Arguments are used for tracking purposes
-
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('foo@bar.com')->
-       ...
-       addUniqueArgument("Customer", "Someone")->
-       addUniqueArgument("location", "Somewhere");
-```
-
-### Using Filter Settings ###
-
-Filter Settings are used to enable and disable apps, and to pass parameters to those apps.
-
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('foo@bar.com')->
-       ...
-       addFilterSetting("gravatar", "enable", 1)->
-       addFilterSetting("footer", "enable", 1)->
-       addFilterSetting("footer", "text/plain", "Here is a plain text footer")->
-       addFilterSetting("footer", "text/html", "<p style='color:red;'>Here is an HTML footer</p>");
-```
-
-### Using Headers ###
-
-Headers can be used to add existing sendgrid functionality (such as for categories or filters), or custom headers can be added as necessary.
-
-```php
-$mail = new SendGrid\Mail();
-$mail->addTo('foo@bar.com')->
-       ...
-       addHeader("category", "My New Category");
-```
+# License
+[The MIT License (MIT)](LICENSE.md)
